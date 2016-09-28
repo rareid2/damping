@@ -1,16 +1,4 @@
-// #include <Eigen/Core>
-
-// #include <stdio.h>
-// #include <math.h>
-// #include "time.h"
-// #include <unistd.h>
-// #include <stdlib.h>
-// #include <iostream>
-// #include <fstream>
-
-// #include <consts.h>
 #include <damping.h>
-// #include <unistd.h>
 
 using namespace std;
 using namespace Eigen;
@@ -53,10 +41,11 @@ int main(int argc, char *argv[])
 
     // Parse input arguments:
     int opt = 0;
-    while ((opt = getopt(argc, argv, "i:o:m:a:k")) != -1) {
+    while ((opt = getopt(argc, argv, "i:o:m:a:k:")) != -1) {
         switch(opt) {
             case 'i':
             // input filename:
+            // cout << "inp filename!\n";
                 inpFileName = (string) optarg;
                 break;
             case 'o':
@@ -68,20 +57,10 @@ int main(int argc, char *argv[])
                 mode = atoi(optarg);
                 break;
             case 'a':
-            // Ap:
-                AE_level = strtod(optarg,NULL);
-                if ( (AE_level > 3) || (AE_level < 0)) {
-                    cout << "AE_level outside of range (0, 3)\n";
-                    return 0;
-                }
+                AE_level = strtod(optarg, NULL);
                 break;
             case 'k':
-            // Kp:
-                Kp = strtod(optarg,NULL);
-                if ( Kp < 0) {
-                    cout << "Kp outside of range (0, inf)\n";
-                    return 0;
-                }
+                Kp = strtod(optarg, NULL);
                 break;
             case '?':
                  printf("\nUnknown option: %s\n",opt);
@@ -98,7 +77,7 @@ int main(int argc, char *argv[])
     cout << "Kp: " << Kp << "\n";
 
     cout << "\n---- DAMPING ----\n";
-    // // Load the rayfile:
+    // Load the rayfile:
 
     raylist = read_rayfile(inpFileName);
     
@@ -116,6 +95,7 @@ int main(int argc, char *argv[])
     }   
 
 
+    // Print to file:
     write_rayfile(outFileName, raylist);
 
     // // Print to a file:

@@ -59,7 +59,7 @@ double ret;
     // Jm = jn(1, 2);
     // cout << "Jm: " << Jm << "\n";
 
-    for (int m = m_low; m < m_hi; m++) {
+    for (int m = m_low; m <= m_hi; m++) {
         // evaluate Bessel functions
         Jm = jn(m, kperp*vperp/wch);
         Jm_m1 = jn(m + 1, kperp*vperp/wch);

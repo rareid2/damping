@@ -46,6 +46,10 @@ function [out] = readrayoutput(filename)
     out{ii}.Ns =  tmp(:,(21+2*out{ii}.Nspec):(21+3*out{ii}.Nspec-1));
     out{ii}.nus = tmp(:,(21+3*out{ii}.Nspec):(21+4*out{ii}.Nspec-1));
 
+    if (size(tmp) > (21 + 4*out{ii}.Nspec - 1))
+      disp('loading damping...');
+      out{ii}.damping = tmp(:, end);
+    end;
 
     % Turn vectors of constants into scalars
     out{ii}.qs = out{ii}.qs(1,:);

@@ -1,8 +1,6 @@
 // #include <consts.h>
 #include <damping.h>
 
-
-
 using namespace std;
 
 map <int, rayF> read_rayfile(string fileName)
@@ -226,6 +224,3 @@ void write_rayfile(string fileName, map <int, rayF> raylist) {
     }   
 
 }
-
-
-

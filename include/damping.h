@@ -43,21 +43,21 @@ typedef struct rayfile_struct {
     vector <vector <double> > Ns;    // number density of species (m^-3)
     vector <vector <double> > nus;   // collision frequencies
     vector <double> damping;
-    
+
 } rayF;
 
 // wipp_fileutils:
 map<int, rayF> read_rayfile(string fileName);
 void write_rayfile(string fileName, map <int, rayF> raylist);
 
-// Landau damping
+// Damping (Ngo version):
 void damping_ngo(rayF &rayfile);
 
-// Porting the Damping Code:
+// Damping (Faust version):
 void damping_foust(rayF &rayfile, double Kp, double AE_level);
 double integrand_wrapper(double x, void* data);
-
 double kp_to_pp(double kp);
+
 
 // Math functions
 double l2_norm(vector<double> u);

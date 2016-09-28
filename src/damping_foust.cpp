@@ -1,18 +1,4 @@
-// #include <Eigen/Core>
-
-// #include <stdio.h>
-// #include <math.h>
-// #include "time.h"
-// #include <unistd.h>
-// #include <stdlib.h>
-// #include <iostream>
-// #include <fstream>
-
-
-// #include <consts.h>
 #include <damping.h>
-// #include <psd_model.h>
-// #include <integrand.h>
 #include <gauss_legendre.h>
 
 #include <complex>
@@ -24,18 +10,8 @@ using namespace Eigen;
 extern "C" void sm_to_mag_d_(int* itime, double* x_in, double* x_out);
 extern "C" void cart_to_pol_d_(double* x_in, double* lat, double* lon, double* radial);
 
-class psd_model; 
-class integrand;
-
-// Resonance mode (I think)
-#define     M_RES 0
-// I think these are fit params for the suprathermal electron distribution
-#define     P_DIST      0.0
-#define     Q_DIST      2.0
-#define     AN_CM_DIST  2E5
-#define     V0_DIST     1.0
-
-// #define     KP          4.0  // Add this as an input or something, you doof.
+class psd_model; // Suprathermal electron distribution
+class integrand; // The function to be integrated
 
 // A port of Forrest's 3d damping code.
 void damping_foust(rayF &ray, double Kp, double AE_level) {
@@ -58,7 +34,6 @@ void damping_foust(rayF &ray, double Kp, double AE_level) {
     Vector3d vgrel;
     Vector3d Bhat;
     Vector3d pos_prev;
-
 
     double kpar, kperp;
     double theta;
@@ -84,6 +59,11 @@ void damping_foust(rayF &ray, double Kp, double AE_level) {
     // Integrand object
     integrand integ;
 
+    // Resonance modes to integrate over
+    // (0 = Landau damping, +-1 = cyclotron resonance)
+    int m_low = 0;
+    int m_hi  = 0;
+
     // Change this to an input, you doof
     // double AE_level = 3;
 
@@ -93,22 +73,22 @@ void damping_foust(rayF &ray, double Kp, double AE_level) {
     n_steps = 500.0;
     v_step = C/n_steps; //<- change back to this!
 
-    // Get ray launch location in mag dipole coordinates:
-    xin[0] = ray.pos[0][0];
-    xin[1] = ray.pos[0][1];
-    xin[2] = ray.pos[0][2];
+    // // Get ray launch location in mag dipole coordinates:
+    // xin[0] = ray.pos[0][0];
+    // xin[1] = ray.pos[0][1];
+    // xin[2] = ray.pos[0][2];
     
-    // // Map to magnetic dipole coordinates
-    sm_to_mag_d_(itime_in, xin, xout);
-    cart_to_pol_d_(xout, &lat_init, &lon_init, &r_init);
-    // printf("pos size: %d\n",ray.pos[0].size());
-    r_init/= R_E;
+    // // // Map to magnetic dipole coordinates
+    // sm_to_mag_d_(itime_in, xin, xout);
+    // cart_to_pol_d_(xout, &lat_init, &lon_init, &r_init);
+    // // printf("pos size: %d\n",ray.pos[0].size());
+    // r_init/= R_E;
 
-    printf("mag coords: %0.3f, %0.3f, %0.3f\n", R2D*lat_init, R2D*lon_init, r_init);
+    // printf("mag coords: %0.3f, %0.3f, %0.3f\n", R2D*lat_init, R2D*lon_init, r_init);
 
 
     // I don't understand what this is yet.
-    AN = AN_CM_DIST * pow( 10.0 , (12.0-(4.0*Q_DIST)) );
+    // AN = AN_CM_DIST * pow( 10.0 , (12.0-(4.0*Q_DIST)) );
 
     // Initialize ray power with zeros
     // VectorXd ray_pwr = VectorXd::Zero(ray.time.size());
@@ -163,9 +143,6 @@ void damping_foust(rayF &ray, double Kp, double AE_level) {
 
         B0mag = B0.norm();
 
-        // Print some shit:
-        // cout << "t: " << ray.time[ii] << " MLT: " << MLT << " lat: " << R2D*lat << " L_sh: " << L_sh << "\n";
-        
         // ------- spatialdamping.m -----------
         // Theta is the angle between parallel and perpendicular K
         theta = atan2(kperp, kpar);
@@ -210,18 +187,12 @@ void damping_foust(rayF &ray, double Kp, double AE_level) {
 
         // ---------- hot_dispersion_imag.m ------
 
-        int m_low = -1;
-        int m_hi  = 1;
-
         integ.initialize(psd, kperp, kpar, 
                         ray.w, n, m_low, m_hi, wce_h, 
                         R, L, P, S);
 
-        // cout << integ.evaluate_t(0.5) << "\n";
-
-
         // // Integrate it!
-        Di = gauss_legendre(40, integrand_wrapper, (void*) &integ, 0., 1.);
+        Di = gauss_legendre(50, integrand_wrapper, (void*) &integ, 0., 1.);
         ki = -(ray.w/C)*(0.5)*(1./(4.*n*(2.*a*n*n-b))) * Di;
         // (ki is the output of spatialdamping.m)
 
@@ -231,24 +202,12 @@ void damping_foust(rayF &ray, double Kp, double AE_level) {
         double dist = (pos - pos_prev).norm();
 
         // cout << "dist: " << dist << "\n";
-        ray.damping[ii] = ray.damping[ii-1]*exp(-dist*ki_along_vg);        
-
-        // cout << "damping: " << ray.damping[ii] << "\n";
-
-        // cout << "Di: " << Di << " ki: " << ki << "\n";
-
-
+        // Power = previous power *(e^(-(distance)(damping)(2))).
+        ray.damping[ii] = ray.damping[ii-1]*exp(-dist*ki_along_vg*2.0);        
 
 
 
     } // Step through ray
-
-
-// for (double t=0; t < 2*PI; t+=0.01) {
-//     double tmp_integ = gauss_legendre(20, eff, NULL, 0, t);
-//     cout << "t: " << t << " integ: " << tmp_integ << "\n";
-
-// }
 
 } // damping_ngo
 

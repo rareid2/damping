@@ -1,15 +1,3 @@
-// #include <Eigen/Core>
-
-// #include <stdio.h>
-// #include <math.h>
-// #include "time.h"
-// #include <unistd.h>
-// #include <stdlib.h>
-// #include <iostream>
-// #include <fstream>
-
-
-// #include <consts.h>
 #include <damping.h>
 
 #include <complex>
