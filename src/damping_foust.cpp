@@ -7,8 +7,8 @@
 using namespace std;
 using namespace Eigen;
 
-extern "C" void sm_to_mag_d_(int* itime, double* x_in, double* x_out);
-extern "C" void cart_to_pol_d_(double* x_in, double* lat, double* lon, double* radial);
+// extern "C" void sm_to_mag_d_(int* itime, double* x_in, double* x_out);
+// extern "C" void cart_to_pol_d_(double* x_in, double* lat, double* lon, double* radial);
 
 class psd_model; // Suprathermal electron distribution
 class integrand; // The function to be integrated
@@ -16,15 +16,15 @@ class integrand; // The function to be integrated
 // A port of Forrest's 3d damping code.
 void damping_foust(rayF &ray, double Kp, double AE_level) {
     int itime_in[2];
-    double xin[3];
-    double xout[3];
-    double lat, lon, r;
+    // double xin[3];
+    // double xout[3];
+    double lat, r;
     double L_sh;
     double MLT;
 
-    double lat_init, lon_init, r_init;
-    double AN;
-    double v_step, n_steps;
+    // double lat_init, lon_init, r_init;
+    // double AN;
+    // double v_step, n_steps;
 
     Vector3d pos;
     Vector3d B0;
@@ -49,7 +49,7 @@ void damping_foust(rayF &ray, double Kp, double AE_level) {
     double kmag;
 
     double R, L, P, S, D; // Stix parameters
-    double a, b;
+    double a, b;          
     double B0mag;
     double wps2, whs;
 
@@ -61,17 +61,17 @@ void damping_foust(rayF &ray, double Kp, double AE_level) {
 
     // Resonance modes to integrate over
     // (0 = Landau damping, +-1 = cyclotron resonance)
-    int m_low = 0;
-    int m_hi  = 0;
+    int m_low = -1;
+    int m_hi  = 1;
 
     // Change this to an input, you doof
     // double AE_level = 3;
 
-    itime_in[0] = 2012045;          // yyyyddd
-    itime_in[1] = 1*(60*60*1000);   // time of day in msec     
+    // itime_in[0] = 2012045;          // yyyyddd
+    // itime_in[1] = 1*(60*60*1000);   // time of day in msec     
 
-    n_steps = 500.0;
-    v_step = C/n_steps; //<- change back to this!
+    // n_steps = 500.0;
+    // v_step = C/n_steps; //<- change back to this!
 
     // // Get ray launch location in mag dipole coordinates:
     // xin[0] = ray.pos[0][0];

@@ -133,7 +133,9 @@ void damping_ngo(rayF &ray) {
 
 
         // Calculate geometric factor (dipole coordinates)
-        geom_fact = r_init * cos(lat_init) / (r * cos(lat));
+        // geom_fact = r_init * cos(lat_init) / (r * cos(lat));
+        geom_fact = 1.0;
+        
         // printf("geometric factor: %0.3f\n",geom_fact);
 
         B0    = Map<VectorXd>(ray.B0[ii].data(),3,1);

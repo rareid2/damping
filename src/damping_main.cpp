@@ -12,9 +12,21 @@ extern "C" void pol_to_cart_d_(double* lat, double* lon, double* radius, double*
 // extern "C" double t0_d_(int* itime, int* iyr, int* iday, double* ut); // date to julian centuries
  
 int main(int argc, char *argv[]) 
+// Calculates wave power damping for the Stanford 3D raytracer.
+// A port of Forrest Foust's Matlab-based implementation.
+// Version 1.0  9.2016  Austin Sousa  (asousa@stanford.edu)
+
+// Input parameters:
+//     -i:     Input file to use  (default: "input.ray")
+//     -o:     Output file to use (default: "output.ray")
+//     -m:     Mode -- 1 for modern implementation, 0 for the legacy
+//             damping code from the 2d raytracer.
+//     -a:     AE index - integer valued, 1, 2, 3.
+//     -k:     Kp: Real valued, must be positive.
+
 {
+
     map <int, rayF> raylist;
-    // map <int, VectorXd> damplist;
 
 
     double x_in[3];
@@ -33,8 +45,8 @@ int main(int argc, char *argv[])
     double Kp;
 
     // Default parameters:
-    inpFileName = "four_adjacent.ray";
-    outFileName = "damping.txt";
+    inpFileName = "input.ray";
+    outFileName = "output.ray";
     mode = 1;     // 1 for foust, 0 for ngo
     AE_level = 3;
     Kp = 4;
