@@ -108,7 +108,7 @@ void damping_foust(rayF &ray, double Kp, double AE_level) {
     //                     fe = @(vperp, vpar) crres_polar_hybrid_psd(vperp, vpar, n_fit, An_fit, L, L_pp);    
 
     // (sorry for the hard-coded path here)
-    char crres_data_file[100] = "data/crres_clean.mat";
+    char crres_data_file[100] = "/shared/users/asousa/WIPP/3dWIPP/damping/data/crres_clean.mat";
     
     psd_model psd;
     psd.initialize(crres_data_file);
@@ -183,6 +183,19 @@ void damping_foust(rayF &ray, double Kp, double AE_level) {
 
         a = S*sin_th_sq + P*cos_th_sq;
         b = R*L*sin_th_sq + P*S*(1+cos_th_sq);
+
+
+        // if (ii==1) {
+        //             cout << "wps2: " << wps2 << " whs: " << whs << "\n";
+        //             cout << "Stix Params [1]: ";
+        //             cout << R << " ";
+        //             cout << L << " ";
+        //             cout << P << " ";
+        //             cout << S << " ";
+        //             cout << D << " ";
+        //             cout << a << " ";
+        //             cout << b << "\n";
+        // }
         // --------------------------------------------
 
         // ---------- hot_dispersion_imag.m ------
@@ -209,7 +222,8 @@ void damping_foust(rayF &ray, double Kp, double AE_level) {
 
     } // Step through ray
 
-} // damping_ngo
+
+} // damping_foust
 
 
 // Here's a working place to write an integrand. But how do we point it to

@@ -22,8 +22,8 @@ extern "C" void cart_to_pol_d_(double* x_in, double* lat, double* lon, double* r
 
 // A port of the original raytracer's damping code, to compare to Forrest's 3d damping.
 
-void damping_ngo(rayF &ray) {
-    int itime_in[2];
+void damping_ngo(int itime_in[2], rayF &ray, bool include_geom_factor) {
+    // int itime_in[2];
     double xin[3];
     double xout[3];
     double lat, lon, r;
@@ -77,8 +77,8 @@ void damping_ngo(rayF &ray) {
     double init_pwr = 1.0;   // Initial ray power
 
 
-    itime_in[0] = 2012045;          // yyyyddd
-    itime_in[1] = 1*(60*60*1000);   // time of day in msec     
+    // itime_in[0] = 2012045;          // yyyyddd
+    // itime_in[1] = 1*(60*60*1000);   // time of day in msec     
 
     n_steps = 500.0;
     v_step = C/n_steps; //<- change back to this!
@@ -93,13 +93,13 @@ void damping_ngo(rayF &ray) {
     xin[1] = ray.pos[0][1];
     xin[2] = ray.pos[0][2];
     
-    // // Map to magnetic dipole coordinates
+    // // // Map to magnetic dipole coordinates
     sm_to_mag_d_(itime_in, xin, xout);
     cart_to_pol_d_(xout, &lat_init, &lon_init, &r_init);
     // printf("pos size: %d\n",ray.pos[0].size());
     r_init/= R_E;
 
-    printf("mag coords: %0.3f, %0.3f, %0.3f\n", R2D*lat_init, R2D*lon_init, r_init);
+    // printf("mag coords: %0.3f, %0.3f, %0.3f\n", R2D*lat_init, R2D*lon_init, r_init);
 
 
     // I don't understand what this is yet.
@@ -133,10 +133,14 @@ void damping_ngo(rayF &ray) {
 
 
         // Calculate geometric factor (dipole coordinates)
-        // geom_fact = r_init * cos(lat_init) / (r * cos(lat));
-        geom_fact = 1.0;
+        if (include_geom_factor) {
+            geom_fact = r_init * cos(lat_init) / (r * cos(lat));
+        } else {
+         geom_fact = 1.0;   
+        }
+        // geom_fact = 1.0;
         
-        // printf("geometric factor: %0.3f\n",geom_fact);
+        printf("geometric factor: %0.3f\n",geom_fact);
 
         B0    = Map<VectorXd>(ray.B0[ii].data(),3,1);
         Ns    = Map<VectorXd>(ray.Ns[ii].data(),3,1);

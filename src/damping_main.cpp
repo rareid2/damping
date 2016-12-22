@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 
     double x_in[3];
     double x_out[3];
-    int itime;
+    int itime_in[2];
 
     // char *fileName;
     string inpFileName;
@@ -52,28 +52,38 @@ int main(int argc, char *argv[])
     Kp = 4;
 
     // Parse input arguments:
+    static struct option long_options[] = 
+    {
+        {"inp_file",    required_argument,  0,  'i'},
+        {"out_file",    required_argument,  0,  'o'},
+        {"mode",        required_argument,  0,  'm'},
+        {"AE",          required_argument,  0,  'a'},
+        {"Kp",          required_argument,  0,  'k'},
+        {"yearday",     required_argument,  0,  't'},
+        {"msec",        required_argument,  0,  'u'},
+        {0, 0, 0, 0}
+    };
+
+
     int opt = 0;
-    while ((opt = getopt(argc, argv, "i:o:m:a:k:")) != -1) {
+    int opt_index = 0;
+
+    while (( opt = getopt_long (argc, argv, "i:o:m:a:k:t:u:", long_options, &opt_index)) != -1) {
         switch(opt) {
-            case 'i':
-            // input filename:
-            // cout << "inp filename!\n";
-                inpFileName = (string) optarg;
-                break;
-            case 'o':
-            // output filename:
-                outFileName = (string) optarg;
-                break;
-            case 'm':
-            // damping mode:
-                mode = atoi(optarg);
-                break;
-            case 'a':
-                AE_level = strtod(optarg, NULL);
-                break;
-            case 'k':
-                Kp = strtod(optarg, NULL);
-                break;
+            case 'i':   // input filename:
+                inpFileName = (string) optarg;              break;
+            case 'o':   // output filename:
+                outFileName = (string) optarg;              break;
+            case 'm':   // damping mode:
+                mode = atoi(optarg);                        break;
+            case 'a':   // AE
+                AE_level = strtod(optarg, NULL);            break;
+            case 'k':   // Kp
+                Kp = strtod(optarg, NULL);                  break;
+            case 't':   // yearday
+                itime_in[0] = atoi(optarg);                 break;
+            case 'u':   // msec of day
+                itime_in[1] = atoi(optarg);                 break;
             case '?':
                  printf("\nUnknown option: %s\n",opt);
             break;
@@ -100,7 +110,7 @@ int main(int argc, char *argv[])
         // results are stored in ray.damping
         switch(mode) {
             case 0:
-                damping_ngo(iter->second);   break;
+                damping_ngo(itime_in, iter->second, true);   break;
             case 1:
                 damping_foust(iter->second, Kp, AE_level); break;
         }
@@ -108,7 +118,9 @@ int main(int argc, char *argv[])
 
 
     // Print to file:
-    write_rayfile(outFileName, raylist);
+    // write_rayfile(outFileName, raylist);     // Annotate whole rayfile
+    write_damping(outFileName, raylist);
+    
 
     // // Print to a file:
     // for(map<int,rayF>::iterator iter = raylist.begin(); iter != raylist.end(); ++iter){

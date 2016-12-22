@@ -63,10 +63,9 @@
 // #define		EA_SPLIT	1
 // #define		MULT		1 //2.0
 
-#define 	WAVE_PWR_THRESH		0 //1e-6	// minimum wave power (ratio of initial)
+#define 	WAVE_PWR_THRESH	   1e-6	// minimum wave power (ratio of initial)
 										// Once a ray is damped to this power, all
 										// subsequent steps are zero.
-
 
 // For flux calculation:
 #define     ALPHA_DISTRIBUTION 0    // "SQUARE" in previous versions

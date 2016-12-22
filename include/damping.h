@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <getopt.h>
 
 #include <integrand.h>
 #include <psd_model.h>
@@ -30,6 +31,10 @@ typedef struct rayfile_struct {
     double nspec;                      // Number of species in plasmasphere model
     // double ray_num;                 // Ray index number
     vector <double> time;            // Group time
+
+    int iyr;
+    int idoy;
+    int isec;
 
     vector <vector <double> > pos;
     vector <vector <double> > vprel;
@@ -48,12 +53,15 @@ typedef struct rayfile_struct {
 
 // wipp_fileutils:
 map<int, rayF> read_rayfile(string fileName);
-void write_rayfile(string fileName, map <int, rayF> raylist);
+void write_rayfile(string fileName, map <int, rayF> raylist);   // Write complete rayfile + damping
+void write_damping(string fileName, map <int, rayF> raylist);   // Write damping standalone
 
 // Damping (Ngo version):
-void damping_ngo(rayF &rayfile);
+// void damping_ngo(rayF &rayfile);
+void damping_ngo(int itime_in[2], rayF &ray, bool include_geom_factor);
 
-// Damping (Faust version):
+
+// Damping (Foust version):
 void damping_foust(rayF &rayfile, double Kp, double AE_level);
 double integrand_wrapper(double x, void* data);
 double kp_to_pp(double kp);
@@ -68,6 +76,5 @@ vector<double> add(vector<double>u, vector<double> v);
 // Helpers
 void print_vector(vector<double> u);
 void polyfit(const vector<double> &xv, const vector<double> &yv, vector<double> &coeff, int order);
-
 
 #endif

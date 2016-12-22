@@ -216,11 +216,43 @@ void write_rayfile(string fileName, map <int, rayF> raylist) {
 
                 fprintf(file, "\n");
 
+                // Stop writing rays after damping goes below a certain threshold
+                if (ray.damping[x] < WAVE_PWR_THRESH) {
+                    break;
+                }
             } // timestep
         } // raylist
 
     } else {   // Couldn't open the file
         cout << "Something's Fucky\n";
     }   
+}
 
+
+
+void write_damping(string fileName, map<int, rayF> raylist) {
+    rayF ray;
+    FILE * file;
+
+    cout << "writing " << fileName << "...\n";
+    
+    file = fopen(fileName.c_str(), "w");    
+    if (file != NULL) {
+        cout << "Successfully opened " << fileName << "\n";
+
+        // Loop over entries in raylist:
+        for(map<int,rayF>::iterator iter = raylist.begin(); iter != raylist.end(); ++iter){
+            ray = iter->second;
+            cout << ray.time.size() << "\n";
+
+            // Loop over entries in each ray:
+            for (int x=0; x < ray.time.size(); x++) {
+                // Re-print everything in the same format as read in:
+                fprintf(file, "%d  %.15e  %.15e\n", iter->first, ray.time[x], ray.damping[x]);
+            } // timestep
+        } // raylist
+
+    } else {   // Couldn't open the file
+        cout << "Something's Fucky\n";
+    }   
 }
