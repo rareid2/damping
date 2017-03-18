@@ -45,6 +45,8 @@ int main(int argc, char *argv[])
     double Kp;
 
     // Default parameters:
+    itime_in[0] = 2010001;
+    itime_in[1] = 0;
     inpFileName = "input.ray";
     outFileName = "output.ray";
     mode = 1;     // 1 for foust, 0 for ngo
@@ -112,7 +114,7 @@ int main(int argc, char *argv[])
             case 0:
                 damping_ngo(itime_in, iter->second, true);   break;
             case 1:
-                damping_foust(iter->second, Kp, AE_level); break;
+                damping_foust(iter->second, Kp, AE_level, itime_in); break;
         }
     }   
 

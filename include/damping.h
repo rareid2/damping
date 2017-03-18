@@ -1,6 +1,7 @@
 // wipp.h
 #ifndef damping_H
 #define damping_H
+#include <coord_transforms.h>
 
 #include <Eigen/Core>
 #include <stdio.h>
@@ -62,7 +63,7 @@ void damping_ngo(int itime_in[2], rayF &ray, bool include_geom_factor);
 
 
 // Damping (Foust version):
-void damping_foust(rayF &rayfile, double Kp, double AE_level);
+void damping_foust(rayF &rayfile, double Kp, double AE_level, int itime_in[2]);
 double integrand_wrapper(double x, void* data);
 double kp_to_pp(double kp);
 
@@ -76,5 +77,11 @@ vector<double> add(vector<double>u, vector<double> v);
 // Helpers
 void print_vector(vector<double> u);
 void polyfit(const vector<double> &xv, const vector<double> &yv, vector<double> &coeff, int order);
+
+// External Fortran function to calculate plasmapause vs Kp.
+// Lifted from GCPM plasma model, GCPMv2.4
+// extern "C" double pp_profile_d_(double* al, double* amlt, double* akp, double* a8);
+
+double bulge(double kp, double mlt);
 
 #endif

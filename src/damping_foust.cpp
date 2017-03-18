@@ -14,17 +14,10 @@ class psd_model; // Suprathermal electron distribution
 class integrand; // The function to be integrated
 
 // A port of Forrest's 3d damping code.
-void damping_foust(rayF &ray, double Kp, double AE_level) {
-    int itime_in[2];
-    // double xin[3];
-    // double xout[3];
-    double lat, r;
+void damping_foust(rayF &ray, double Kp, double AE_level, int itime_in[2]) {
+    double lat, lon, r;
     double L_sh;
-    double MLT;
-
-    // double lat_init, lon_init, r_init;
-    // double AN;
-    // double v_step, n_steps;
+    double mlt;
 
     Vector3d pos;
     Vector3d B0;
@@ -34,6 +27,7 @@ void damping_foust(rayF &ray, double Kp, double AE_level) {
     Vector3d vgrel;
     Vector3d Bhat;
     Vector3d pos_prev;
+    double pos_tmp[3]; 
 
     double kpar, kperp;
     double theta;
@@ -108,7 +102,7 @@ void damping_foust(rayF &ray, double Kp, double AE_level) {
     //                     fe = @(vperp, vpar) crres_polar_hybrid_psd(vperp, vpar, n_fit, An_fit, L, L_pp);    
 
     // (sorry for the hard-coded path here)
-    char crres_data_file[100] = "/shared/users/asousa/WIPP/3dWIPP/damping/data/crres_clean.mat";
+    char crres_data_file[100] = "/shared/users/asousa/software/damping/data/crres_clean.mat";
     
     psd_model psd;
     psd.initialize(crres_data_file);
@@ -122,16 +116,33 @@ void damping_foust(rayF &ray, double Kp, double AE_level) {
         n_vec = Map<VectorXd>(ray.n[ii].data(),3,1);
         Ns    = Map<VectorXd>(ray.Ns[ii].data(),3,1);
         vgrel = Map<VectorXd>(ray.vgrel[ii].data(),3,1);
+
+
         // Get local L-shell:
         lat = atan(pos[2]/sqrt(pow(pos[0],2) + pow(pos[1],2)));
         r = pos.norm();
         L_sh = r/pow(cos(lat),2)/R_E;
 
+
+        // Get lat, lon, alt in geomagnetic:
+        sm_to__d_(itime_in, pos.data(), pos_tmp);
+        cart_to_pol_d_(pos_tmp, &lat, &lon, &r);
+
+        // cout << "orig: " << r << ",\t" << lat << endl;
+        // cout << "xfrm: " << r << ",\t" << lat << " lon: " << lon*R2D <<  endl;
+
         // Get MLT:
-        MLT = fmod((atan2(pos[1], pos[0]) + PI)/(2*PI)*24, 24); //MLT in hours; 0 MLT is in -x direction
+        mlt = fmod((atan2(pos[1], pos[0]) + PI)/(2*PI)*24, 24); //MLT in hours; 0 MLT is in -x direction
+        // cout << "MLT orig: " << mlt << endl;
+
+        mlt = MLT(itime_in, lon);
+        // cout << "MLT (mine): " << mlt << endl;
+        // cout << endl;
 
         // Set the current location parameters for the density model:
-        psd.set_params(L_sh, L_pp, MLT, AE_level);
+        L_pp = bulge(Kp, mlt); // Get plasmapause at this MLT
+        // cout << "i: " << ii << "\tMLT: " << mlt<< "\tLpp: " << L_pp << endl;
+        psd.set_params(L_sh, L_pp, mlt, AE_level);
 
         wce_h = Q_EL*B0.norm()/M_EL;
 

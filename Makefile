@@ -6,6 +6,9 @@ CC=c++
 CFLAGS=-I$(IDIR) -I$(EIGEN_DIR) -I$(MATLAB_DIR)
 MATLAB_FLAGS = -L /usr/local/MATLAB/R2012a/bin/glnxa64 -leng -lm -lmx -lmex -lmat -lut -Wl,-rpath=/usr/local/MATLAB/R2012a/bin/glnxa64
 
+# g95
+FORTRAN_FLAGS = -pg -Wall -fstatic -ffixed-line-length-132 -ffree-line-length-huge
+
 # compiled module directory
 ODIR =build
 # Libraries
@@ -19,26 +22,36 @@ BDIR =bin
 SRC_DIR=src
 
 # Dependencies (header files)
-_DEPS = damping.h consts.h
+_DEPS = damping.h consts.h coord_transforms.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 
 # Objects to build
 _OBJ = damping_main.o damping_ngo.o damping_foust.o math_utils.o \
-	   kp_to_pp.o polyfit.o psd_model.o integrand.o wipp_fileutils.o
+	   kp_to_pp.o polyfit.o psd_model.o integrand.o wipp_fileutils.o \
+	   bulge.o coord_transforms.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
+# # The plasmapause location scripts, lifted from GCPM v2.4
+# _FORTRAN_OBJ = pp_profile_d.mod types.mod util.mod constants.mod
+# FORTRAN_OBJ = $(patsubst %,$(ODIR)/%,$(_FORTRAN_OBJ))
 
 XFORM = lib/xform_double
 # Rules for making individual objects
 $(ODIR)/%.o: $(SRC_DIR)/%.cpp $(DEPS)
-
 	$(CC) -c -o $@ $< $(CFLAGS) -I$(EIGEN_DIR) -L$(LDIR) 
+
+# # Fortran modules
+# $(ODIR)/%.mod: $(SRC_DIR)/%.f95 $(DEPS)
+# 	g95 ${FORTRAN_FLAGS} -c -o $@ $<
 
 # Rule to link everything together + generate executable
 damping: $(OBJ) libxformd.a $(ODIR)/gauss_legendre.o
 	# $(MAKE) -C $(XFORM)
 	$(CC) $(CFLAGS) $(OBJ) $(ODIR)/gauss_legendre.o -L $(LDIR) -lxformd -lgfortran $(MATLAB_FLAGS) -o $(BDIR)/$@
+
+dump: $(ODIR)/dump_psd_models.o $(ODIR)/kp_to_pp.o $(ODIR)/polyfit.o $(ODIR)/psd_model.o
+	$(CC) $(CFLAGS) $(ODIR)/dump_psd_models.o $(ODIR)/kp_to_pp.o $(ODIR)/polyfit.o $(ODIR)/psd_model.o $(ODIR)/gauss_legendre.o -L $(LDIR) -lxformd -lgfortran $(MATLAB_FLAGS) -o $(BDIR)/$@
 
 $(ODIR)/gauss_legendre.o: $(SRC_DIR)/gauss_legendre.c $(IDIR)/gauss_legendre.h
 
@@ -56,3 +69,10 @@ clean:
 	rm -f $(ODIR)/*
 	rm -f $(BDIR)/*
 	$(MAKE) -C $(XFORM) clean
+
+# Everything except the transform library, since it hasn't changed
+tidy:
+	rm -f $(ODIR)/*
+	rm -f $(BDIR)/*
+	# $(MAKE) -C $(XFORM) clean
+

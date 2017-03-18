@@ -305,7 +305,8 @@ double psd_model::suprathermal(double vperp, double vpar) {
     return f;
 }
 
-double psd_model::crres_psd(double vperp, double vpar, double n, double An) {
+// double psd_model::crres_psd(double vperp, double vpar, double n, double An) {
+double psd_model::crres_psd(double vperp, double vpar) {
     // Suprathermal distribution, model-driven.
     // This is what we'll use outside the plasmasphere.
 
@@ -325,7 +326,7 @@ double psd_model::crres_psd(double vperp, double vpar, double n, double An) {
     // % Convert to cm/s
     v = 100.*sqrt(vperp*vperp + vpar*vpar + v0);
 
-    f = An/pow(v, n);
+    f = (this->An_fit)/pow(v, this->n_fit);
 
     // % Convert to s^3/m^6 from s^3/cm^6 
     f = f*pow(100.,6);
@@ -345,12 +346,15 @@ double psd_model::hybrid_psd(double vperp, double vpar) {
     } else if (L_sh - L_pp > 1) {
         // cout << "outside:\n";
         // Way outside plasmasphere:
-        f = this->crres_psd(vperp, vpar, n_fit, An_fit);
+        // f = this->crres_psd(vperp, vpar, n_fit, An_fit);
+        f = this->crres_psd(vperp, vpar);
+
     } else {
         // cout << "hybrid:\n";
         // Blend between the two:
         f_polar = this->suprathermal(vperp, vpar);
-        f_crres = this->crres_psd(vperp, vpar, n_fit, An_fit);
+        // f_crres = this->crres_psd(vperp, vpar, n_fit, An_fit);
+        f_crres = this->crres_psd(vperp, vpar);
 
         // cout << "f_polar: " << f_polar << " f_crres: " << f_crres << "\n";
         w_polar = exp(5*(L_pp - L_sh))/(1 + exp(5*(L_pp - L_sh))); // higher weight inside plasmasphere

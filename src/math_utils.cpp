@@ -21,7 +21,6 @@ vector<double> scalar_multiply(vector<double> u, double v) {
     return out;
 }
 
-
 // Print out all elements of a vector
 void print_vector(vector<double> u) {
     for (int i=0; i < u.size(); i++) {
@@ -44,5 +43,4 @@ vector<double> add(vector<double>u, vector<double> v) {
         out[i] = u[i] + v[i];
     }
 }
-
 
