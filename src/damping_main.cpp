@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
     double AE_level;
     double Kp;
 
+    bool include_geom_factor;
     // Default parameters:
     itime_in[0] = 2010001;
     itime_in[1] = 0;
@@ -52,6 +53,7 @@ int main(int argc, char *argv[])
     mode = 1;     // 1 for foust, 0 for ngo
     AE_level = 3;
     Kp = 4;
+    include_geom_factor = false;
 
     // Parse input arguments:
     static struct option long_options[] = 
@@ -63,6 +65,7 @@ int main(int argc, char *argv[])
         {"Kp",          required_argument,  0,  'k'},
         {"yearday",     required_argument,  0,  't'},
         {"msec",        required_argument,  0,  'u'},
+        {"geom_factor", required_argument,  0,  'v'},
         {0, 0, 0, 0}
     };
 
@@ -86,6 +89,8 @@ int main(int argc, char *argv[])
                 itime_in[0] = atoi(optarg);                 break;
             case 'u':   // msec of day
                 itime_in[1] = atoi(optarg);                 break;
+            case 'v':   // include geometric factor?
+                include_geom_factor = (atoi(optarg)==1);    break;    
             case '?':
                  printf("\nUnknown option: %s\n",opt);
             break;
@@ -112,9 +117,9 @@ int main(int argc, char *argv[])
         // results are stored in ray.damping
         switch(mode) {
             case 0:
-                damping_ngo(itime_in, iter->second, true);   break;
+                damping_ngo(itime_in, iter->second, include_geom_factor);   break;
             case 1:
-                damping_foust(iter->second, Kp, AE_level, itime_in); break;
+                damping_foust(iter->second, Kp, AE_level, itime_in, include_geom_factor); break;
         }
     }   
 

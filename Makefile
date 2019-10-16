@@ -1,10 +1,13 @@
 IDIR =include
 EIGEN_DIR=lib/eigen/
-MATLAB_DIR=/usr/local/MATLAB/R2012a/extern/include
+# Point to your Matlab install -- (specific to your machine)
+MATLAB_DIR=/Applications/MATLAB_R2019a.app/extern/include
 CC=c++
+# CC=gcc
 
-CFLAGS=-I$(IDIR) -I$(EIGEN_DIR) -I$(MATLAB_DIR)
-MATLAB_FLAGS = -L /usr/local/MATLAB/R2012a/bin/glnxa64 -leng -lm -lmx -lmex -lmat -lut -Wl,-rpath=/usr/local/MATLAB/R2012a/bin/glnxa64
+CFLAGS=-I$(IDIR) -I$(EIGEN_DIR) -I$(MATLAB_DIR) -L /usr/local/Cellar/gcc/8.3.0/lib/gcc/8 -L /usr/local/lib/ -lc++
+# MATLAB_FLAGS = -L /usr/local/MATLAB/R2012a/bin/glnxa64 -leng -lm -lmx -lmex -lmat -lut -Wl,-rpath=/usr/local/MATLAB/R2012a/bin/glnxa64
+MATLAB_FLAGS = -L /Applications/MATLAB_R2019a.app/bin/maci64 -leng -lm -lmx -lmex -lmat -lut -Wl -rpath /Applications/MATLAB_R2019a.app/bin/maci64
 
 # g95
 FORTRAN_FLAGS = -pg -Wall -fstatic -ffixed-line-length-132 -ffree-line-length-huge
@@ -38,8 +41,10 @@ OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 XFORM = lib/xform_double
 # Rules for making individual objects
+# $(ODIR)/%.o: $(SRC_DIR)/%.cpp $(DEPS)
+# 	$(CC) -c -o $@ $< $(CFLAGS) -I$(EIGEN_DIR) -L$(LDIR) 
 $(ODIR)/%.o: $(SRC_DIR)/%.cpp $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS) -I$(EIGEN_DIR) -L$(LDIR) 
+	$(CC) -c -o $@ $< $(CFLAGS) -I$(EIGEN_DIR)
 
 # # Fortran modules
 # $(ODIR)/%.mod: $(SRC_DIR)/%.f95 $(DEPS)
@@ -49,6 +54,9 @@ $(ODIR)/%.o: $(SRC_DIR)/%.cpp $(DEPS)
 damping: $(OBJ) libxformd.a $(ODIR)/gauss_legendre.o
 	# $(MAKE) -C $(XFORM)
 	$(CC) $(CFLAGS) $(OBJ) $(ODIR)/gauss_legendre.o -L $(LDIR) -lxformd -lgfortran $(MATLAB_FLAGS) -o $(BDIR)/$@
+	# Move the binaries up to the main directory
+	cp bin/damping ../bin/damping
+	cp data/crres_clean.mat ../bin/crres_clean.mat
 
 dump: $(ODIR)/dump_psd_models.o $(ODIR)/kp_to_pp.o $(ODIR)/polyfit.o $(ODIR)/psd_model.o
 	$(CC) $(CFLAGS) $(ODIR)/dump_psd_models.o $(ODIR)/kp_to_pp.o $(ODIR)/polyfit.o $(ODIR)/psd_model.o $(ODIR)/gauss_legendre.o -L $(LDIR) -lxformd -lgfortran $(MATLAB_FLAGS) -o $(BDIR)/$@

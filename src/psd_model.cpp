@@ -117,12 +117,15 @@ void psd_model::replace_NaNs(mxArray* arr) {
     mwSize number_of_dims;
     mwSize nnz=0, count=0; 
     double *pr, *pi, *pind;
+    mxComplexDouble *pc;    // Complex double -- upgrading to Matlab API 2019 
     const mwSize *dim_array;
 
     /* Get the data */
-    pr=(double *)mxGetPr(arr);
-    pi=(double *)mxGetPi(arr);
-    cmplx = ((pi==NULL) ? 0 : 1);
+    // pc = mxGetComplexDoubles(arr);
+    pr = (double *)mxGetDoubles(arr);
+    // pr=(double *)mxGetPr(arr);
+    // pi=(double *)mxGetPi(arr);
+    // cmplx = ((pi==NULL) ? 0 : 1);
 
     number_of_dims=mxGetNumberOfDimensions(arr);
     elements=mxGetNumberOfElements(arr);
@@ -148,9 +151,10 @@ void psd_model::count_NaNs(mxArray* arr) {
     const mwSize *dim_array;
 
     /* Get the data */
-    pr=(double *)mxGetPr(arr);
-    pi=(double *)mxGetPi(arr);
-    cmplx = ((pi==NULL) ? 0 : 1);
+    // pr=(double *)mxGetPr(arr);
+    // pi=(double *)mxGetPi(arr);
+    // cmplx = ((pi==NULL) ? 0 : 1);
+    pr = (double *)mxGetDoubles(arr);
 
     // cout << "complex? " << cmplx;
 
@@ -219,11 +223,17 @@ vector<double> psd_model::CRRES_fit_params(double L, double MLT, double AE_level
         AE_mx  = mxGetField(crres_data, kk, "AE");          // AE level     <double>
 
         // Get pointers to the sweet data within
-        MLTd = mxGetPr(MLT_mx);
-        Ld   = mxGetPr(L_mx);
-        Jpd  = mxGetPr(Jp_mx);
-        E_d  = mxGetPr(E_mx);
-        AE_d = mxGetPr(AE_mx);
+        // MLTd = mxGetPr(MLT_mx);
+        // Ld   = mxGetPr(L_mx);
+        // Jpd  = mxGetPr(Jp_mx);
+        // E_d  = mxGetPr(E_mx);
+        // AE_d = mxGetPr(AE_mx);
+
+        MLTd = mxGetDoubles(MLT_mx);
+        Ld   = mxGetDoubles(L_mx);
+        Jpd  = mxGetDoubles(Jp_mx);
+        E_d  = mxGetDoubles(E_mx);
+        AE_d = mxGetDoubles(AE_mx);
 
         if (AE_d[0] == AE_target) {
 

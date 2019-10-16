@@ -139,8 +139,8 @@ void damping_ngo(int itime_in[2], rayF &ray, bool include_geom_factor) {
          geom_fact = 1.0;   
         }
         // geom_fact = 1.0;
-        
-        printf("geometric factor: %0.3f\n",geom_fact);
+        // printf("r_init = %0.3f, lat_init = %0.3f, lat = %0.3f, r=%0.3f, ",r_init, lat_init, lat, r);
+        // printf("geometric factor: %0.3f\n",geom_fact);
 
         B0    = Map<VectorXd>(ray.B0[ii].data(),3,1);
         Ns    = Map<VectorXd>(ray.Ns[ii].data(),3,1);

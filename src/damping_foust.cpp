@@ -14,10 +14,16 @@ class psd_model; // Suprathermal electron distribution
 class integrand; // The function to be integrated
 
 // A port of Forrest's 3d damping code.
-void damping_foust(rayF &ray, double Kp, double AE_level, int itime_in[2]) {
+void damping_foust(rayF &ray, double Kp, double AE_level, int itime_in[2], bool include_geom_factor) {
     double lat, lon, r;
     double L_sh;
     double mlt;
+
+    double lat_init, lon_init, r_init;
+    double geom_fact;
+    double xin[3];
+    double xout[3];
+
 
     Vector3d pos;
     Vector3d B0;
@@ -68,15 +74,15 @@ void damping_foust(rayF &ray, double Kp, double AE_level, int itime_in[2]) {
     // v_step = C/n_steps; //<- change back to this!
 
     // // Get ray launch location in mag dipole coordinates:
-    // xin[0] = ray.pos[0][0];
-    // xin[1] = ray.pos[0][1];
-    // xin[2] = ray.pos[0][2];
+    xin[0] = ray.pos[0][0];
+    xin[1] = ray.pos[0][1];
+    xin[2] = ray.pos[0][2];
     
-    // // // Map to magnetic dipole coordinates
-    // sm_to_mag_d_(itime_in, xin, xout);
-    // cart_to_pol_d_(xout, &lat_init, &lon_init, &r_init);
-    // // printf("pos size: %d\n",ray.pos[0].size());
-    // r_init/= R_E;
+    // // Map to magnetic dipole coordinates
+    sm_to_mag_d_(itime_in, xin, xout);
+    cart_to_pol_d_(xout, &lat_init, &lon_init, &r_init);
+    // printf("pos size: %d\n",ray.pos[0].size());
+    r_init/= R_E;
 
     // printf("mag coords: %0.3f, %0.3f, %0.3f\n", R2D*lat_init, R2D*lon_init, r_init);
 
@@ -102,7 +108,7 @@ void damping_foust(rayF &ray, double Kp, double AE_level, int itime_in[2]) {
     //                     fe = @(vperp, vpar) crres_polar_hybrid_psd(vperp, vpar, n_fit, An_fit, L, L_pp);    
 
     // (sorry for the hard-coded path here)
-    char crres_data_file[100] = "/shared/users/asousa/software/damping/data/crres_clean.mat";
+    char crres_data_file[100] = "crres_clean.mat";
     
     psd_model psd;
     psd.initialize(crres_data_file);
@@ -125,8 +131,8 @@ void damping_foust(rayF &ray, double Kp, double AE_level, int itime_in[2]) {
 
 
         // Get lat, lon, alt in geomagnetic:
-        sm_to__d_(itime_in, pos.data(), pos_tmp);
-        cart_to_pol_d_(pos_tmp, &lat, &lon, &r);
+        sm_to_mag_d_(itime_in, pos.data(), pos_tmp);
+        cart_to_pol_d_(pos_tmp, &lat, &lon, &r); 
 
         // cout << "orig: " << r << ",\t" << lat << endl;
         // cout << "xfrm: " << r << ",\t" << lat << " lon: " << lon*R2D <<  endl;
@@ -225,9 +231,19 @@ void damping_foust(rayF &ray, double Kp, double AE_level, int itime_in[2]) {
 
         double dist = (pos - pos_prev).norm();
 
+
+        // Calculate geometric factor (dipole coordinates)
+        if (include_geom_factor) {
+            geom_fact = r_init * cos(lat_init) / (r * cos(lat) / R_E);
+        } else {
+         geom_fact = 1.0;   
+        }
+        // printf("r_init = %0.3f, lat_init = %0.3f, lat = %0.3f, r=%0.3f, ",r_init, lat_init, lat, r);
+        // printf("geometric factor: %0.3f\n",geom_fact);
+
         // cout << "dist: " << dist << "\n";
         // Power = previous power *(e^(-(distance)(damping)(2))).
-        ray.damping[ii] = ray.damping[ii-1]*exp(-dist*ki_along_vg*2.0);        
+        ray.damping[ii] = geom_fact*ray.damping[ii-1]*exp(-dist*ki_along_vg*2.0);        
 
 
 

@@ -63,7 +63,7 @@ void damping_ngo(int itime_in[2], rayF &ray, bool include_geom_factor);
 
 
 // Damping (Foust version):
-void damping_foust(rayF &rayfile, double Kp, double AE_level, int itime_in[2]);
+void damping_foust(rayF &rayfile, double Kp, double AE_level, int itime_in[2], bool include_geom_factor);
 double integrand_wrapper(double x, void* data);
 double kp_to_pp(double kp);
 
