@@ -104,6 +104,7 @@ int main(int argc, char *argv[])
     cout << "damping mode: " << mode << "\n";
     cout << "AE_level: " << AE_level << "\n";
     cout << "Kp: " << Kp << "\n";
+    cout << "Geometric factor? " << include_geom_factor <<"\n";
 
     cout << "\n---- DAMPING ----\n";
     // Load the rayfile:

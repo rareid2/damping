@@ -63,9 +63,10 @@ function ray_power = damp_single(varargin)
         w = ray.w;
 
         % % ------------------- Downsample and interpolate for speed -------------------------------
-        t_step = round(length(ray.time)/ray.time(end)*steplength); % Average of one step every 0.1 seconds
-        t = ray.time(1:t_step:end);
-        % t = ray.time;
+        % Downsample and interpolate here
+%         t_step = round(length(ray.time)/ray.time(end)*steplength); % Average of one step every 0.1 seconds
+%         t = ray.time(1:t_step:end);
+        t = ray.time;  % Don't interpolate! 
         % disp(t_step);
         % Make sure we include the end point in the interpolation, or we'll end up
         % with NaNs in the power at the end of the vector
@@ -110,7 +111,7 @@ function ray_power = damp_single(varargin)
         qe = -q;
 
         % Which resonances to do (0 = landau, ±1 = cyclotron)
-        m = [0];
+        m = [-1, 0, 1];
 
         magnitude = zeros(size(t));
         magnitude(1) = 1;
@@ -126,7 +127,8 @@ function ray_power = damp_single(varargin)
             L = r/cos(mag_lat)^2/R_E;
             MLT = mod((atan2(pos(ii,2), pos(ii,1)) + pi)/(2*pi)*24, 24); % MLT in hours; 0 MLT is in -x direction
             [n_fit, An_fit] = get_fit_params(L, MLT, AE_level, false);
-
+            
+            fprintf("L: %f MLT: %f r: %f n_fit: %f An_fit: %f",L, MLT, r, n_fit, An_fit);
             if ~isfinite(n_fit) || ~isfinite(An_fit)
                 error('invalid n_fit %g or An_fit %g (L=%0.2f,MLT=%0.2f)', n_fit, An_fit, L, MLT);
             end
@@ -172,13 +174,15 @@ function ray_power = damp_single(varargin)
             magnitude(ii) = magnitude(ii-1)*exp(-dist*ki_along_vg);
 
             if DEBUG
+                
                 [theta,phi,radius] = cart2sph(pos(ii,1), pos(ii,2), pos(ii,3));
                 fprintf('t=%0.2f @(%0.2f, %0.2f, %0.2f), dt=%0.03f, damping=%0.2f dB, current power=%0.2f dB (iteration took %s)\n', ...
                   t(ii), phi*180/pi, theta*180/pi, radius/R_E, t(ii)-t(ii-1), db(exp(-dist*ki_along_vg)), db(magnitude(ii)), time_elapsed(t_iter_start, now));
                 % fprintf('\tlat: %0.2f lon: %0.2f r: %0.2f\n',phi*180/pi, theta*180/pi, radius/R_E);
+                fprintf('\n >> n_fit=%0.4f An_fit = %0.4f \n', n_fit, An_fit);
                 else
                 %    disp('Re{n} = 0, not solving evanescent mode');
-                end;
+                end
             end
         end
 

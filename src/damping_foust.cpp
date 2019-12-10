@@ -137,13 +137,17 @@ void damping_foust(rayF &ray, double Kp, double AE_level, int itime_in[2], bool 
         // cout << "orig: " << r << ",\t" << lat << endl;
         // cout << "xfrm: " << r << ",\t" << lat << " lon: " << lon*R2D <<  endl;
 
+
         // Get MLT:
-        mlt = fmod((atan2(pos[1], pos[0]) + PI)/(2*PI)*24, 24); //MLT in hours; 0 MLT is in -x direction
+        // 12.2019: This version matches the old matlab code
+        // mlt = fmod((atan2(pos[1], pos[0]) + PI)/(2*PI)*24, 24); //MLT in hours; 0 MLT is in -x direction
         // cout << "MLT orig: " << mlt << endl;
 
+        // 12.2019: This version was used in my thesis, and finds MLT from
+        //          an externally-assigned time and longitude
         mlt = MLT(itime_in, lon);
         // cout << "MLT (mine): " << mlt << endl;
-        // cout << endl;
+        // / cout << endl;
 
         // Set the current location parameters for the density model:
         L_pp = bulge(Kp, mlt); // Get plasmapause at this MLT

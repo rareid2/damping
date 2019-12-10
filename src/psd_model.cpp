@@ -107,6 +107,7 @@ void psd_model::set_params(double L_sh_in, double L_pp_in, double MLT_in, double
     vector<double> fit_params = CRRES_fit_params(L_sh, MLT, AE_level);
     n_fit = fit_params[0];
     An_fit= fit_params[1];
+    cout << "Fit parameters: L: " << L_sh << " MLT: " << MLT << " n: " << n_fit << ", An: " << An_fit << "\n";
     
 }
 void psd_model::replace_NaNs(mxArray* arr) {
