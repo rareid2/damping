@@ -14,48 +14,53 @@ extern "C" void pol_to_cart_d_(double* lat, double* lon, double* radius, double*
 int main(int argc, char *argv[]) 
 // Calculates wave power damping for the Stanford 3D raytracer.
 // A port of Forrest Foust's Matlab-based implementation.
-// Version 1.0  9.2016  Austin Sousa  (asousa@stanford.edu)
-
 // Input parameters:
-//     -i:     Input file to use  (default: "input.ray")
-//     -o:     Output file to use (default: "output.ray")
-//     -m:     Mode -- 1 for modern implementation, 0 for the legacy
-//             damping code from the 2d raytracer.
-//     -a:     AE index - integer valued, 1, 2, 3.
-//     -k:     Kp: Real valued, must be positive.
+//     --inp_file, -i:     Input file to use  (default: "input.ray")
+//     --out_file, -o:     Output file to use (default: "output.ray")
+//     --mode, -m:         Mode -- 1 for modern implementation, 0 for the legacy
+//                         damping code from the 2d raytracer.
+//     --AE, -a:           AE index - integer valued, 1, 2, 3.
+//     --Kp, -k:           Kp: Real valued, must be positive.
+//     --yearday, -t:      Year and day of year for plasmapause location (YYYYDDD)
+//     --msec, -u:         Milliseconds into day, for plasmapause location
+//     --geom_factor, -v:  Include the dipole geometric focusing factor? 1 for yes, 0 for no
+
+// Version 1.0  9.2016  Austin Sousa  (asousa@stanford.edu)
+//        -- initial port
+// Version 1.1  12.2019 Austin Sousa  (Austin.Sousa@colorado.edu)
+//        -- Some code cleanup
+//        -- updated to use Matlab 2018+ for the file loading
+//        -- briefly confirmed that the output matches the original Matlab code
+//
 
 {
-
     map <int, rayF> raylist;
-
 
     double x_in[3];
     double x_out[3];
     int itime_in[2];
 
-    // char *fileName;
     string inpFileName;
     string outFileName;
     int mode;
     char damping_fileName[100];
-    // ostringstream damping_fileName;
     FILE * outputFile;
 
     double AE_level;
     double Kp;
-
     bool include_geom_factor;
-    // Default parameters:
+
+    // ---------- Default parameters: ----------
     itime_in[0] = 2010001;
     itime_in[1] = 0;
     inpFileName = "input.ray";
-    outFileName = "output.ray";
+    outFileName = "output.damp";
     mode = 1;     // 1 for foust, 0 for ngo
     AE_level = 3;
     Kp = 4;
     include_geom_factor = false;
 
-    // Parse input arguments:
+    // ---------- Parse input arguments: ----------
     static struct option long_options[] = 
     {
         {"inp_file",    required_argument,  0,  'i'},
@@ -68,7 +73,6 @@ int main(int argc, char *argv[])
         {"geom_factor", required_argument,  0,  'v'},
         {0, 0, 0, 0}
     };
-
 
     int opt = 0;
     int opt_index = 0;
@@ -92,12 +96,28 @@ int main(int argc, char *argv[])
             case 'v':   // include geometric factor?
                 include_geom_factor = (atoi(optarg)==1);    break;    
             case '?':
-                 printf("\nUnknown option: %s\n",opt);
+                 // printf("\nUnknown option: %s\n",opt);
             break;
         }
     }
 
-    // Display current inputs:
+    // ---------- Write a welcome message + help string: ----------
+    cout << "\n\n";
+    cout << "-------- Stanford Ray Tracer Landau Damping Code ---------- \n";
+    cout <<"--inp_file, -i:     Input file to use  (default: ""input.ray"")\n";
+    cout <<"--out_file, -o:     Output file to use (default: ""output.ray"")\n";
+    cout <<"--mode, -m:         Mode -- 1 for modern implementation, 0 for the legacy\n";
+    cout <<"                    damping code from the 2d raytracer.\n";
+    cout <<"--AE, -a:           AE index - integer valued, 1, 2, 3.\n";
+    cout <<"--Kp, -k:           Kp: Real valued, must be positive, 0 to 9\n";
+    cout <<"--yearday, -t:      Year and day of year for plasmapause location (YYYYDDD)\n";
+    cout <<"--msec, -u:         Milliseconds into day, for plasmapause location\n";
+    cout <<"--geom_factor, -v:  Include the dipole geometric focusing factor? 1 for yes, 0 for no\n";
+    cout << "----------------------------------------------------------- \n";
+
+    cout <<"\n\n";
+
+    // ---------- Display current inputs: ----------
     cout << "---- Input Parameters ----\n";
     cout << "input file: " << inpFileName << "\n";
     cout << "output file: " << outFileName << "\n";
@@ -105,17 +125,17 @@ int main(int argc, char *argv[])
     cout << "AE_level: " << AE_level << "\n";
     cout << "Kp: " << Kp << "\n";
     cout << "Geometric factor? " << include_geom_factor <<"\n";
-
     cout << "\n---- DAMPING ----\n";
-    // Load the rayfile:
 
+    // ---------- Load the rayfile: ----------
     raylist = read_rayfile(inpFileName);
     
+    // Iterate over each entry in the ray file:
+    // (iter->second is the current value of the iterator)
     for(map<int,rayF>::iterator iter = raylist.begin(); iter != raylist.end(); ++iter){
         printf("damping ray # %d\n",iter->first);
 
-        // Calculate damping for the ray:
-        // results are stored in ray.damping
+        // ---------- Calculate damping for the ray: ----------
         switch(mode) {
             case 0:
                 damping_ngo(itime_in, iter->second, include_geom_factor);   break;
@@ -125,95 +145,10 @@ int main(int argc, char *argv[])
     }   
 
 
-    // Print to file:
+    // ---------- Print to file: ----------
     // write_rayfile(outFileName, raylist);     // Annotate whole rayfile
-    write_damping(outFileName, raylist);
+    write_damping(outFileName, raylist);        // Write the damping file separately
     
-
-    // // Print to a file:
-    // for(map<int,rayF>::iterator iter = raylist.begin(); iter != raylist.end(); ++iter){
-
-    //     sprintf(damping_fileName, "damping_%2.0f.txt",iter->second.w/(2*PI));
-    //     outputFile = fopen(damping_fileName, "w");
-
-    //     if (outputFile != NULL) {
-    //         printf("Hey! Opened %s!\n",damping_fileName);
-
-    //         for (int i=0; i < iter->second.damping.size(); i++) {
-    //             fprintf(outputFile,"%0.4f\t%0.4f\n",iter->second.time[i], iter->second.damping[i]);
-    //         }
-    //         fclose(outputFile);
-
-    //     } else {
-    //         printf("Ugh, didn't open file!\n");
-    //     }
-    // }   
-
-
-
-    // printf("x_in is: %g, %g, %g\n",x_in[0], x_in[1], x_in[2]);
-    // sm_to_geo_d_(&itime, x_in, x_out);
-    // printf("x_out is: %g, %g, %g\n",x_out[0], x_out[1], x_out[2]);
-    // cart_to_pol_d_(&x_out, x_out[0], x_out[1], x_out[2]);
-    // printf("x_out is: %g, %g, %g\n",x_out[0]*180./3.14, x_out[1]*180./3.14, x_out[2]/1000.);
-
-
-
-
-    // Let's check some coordinate transforms!
-
-    // double lat_in, lon_in, rad_in;
-    // double tmp_in[3], tmp_out[3];
-    // double tmp_out_2[3];
-
-    // int itime_in[2];
-    // int iyr, iday;
-    // double ut, jd;
-
-
-    // itime_in[0] = 2012001;          // yyyyddd
-    // itime_in[1] = 1*(60*60*1000);   // time of day in msec
-
-    // lat_in = 45*D2R;
-    // lon_in = -180*D2R;
-    // rad_in = 6371e3;
-
-    // double lat_out, lon_out, rad_out;
-
-
-    // pol_to_cart_d_(&lat_in, &lon_in, &rad_in, tmp_in);
-    // geo_to_sm_d_(itime_in, tmp_in, tmp_out);
-    // sm_to_geo_d_(itime_in, tmp_out, tmp_out_2);
-    // cart_to_pol_d_(tmp_out_2, &lat_out, &lon_out, &rad_out);
-    
-    // lat_out = R2D*lat_out;
-    // lon_out = R2D*lon_out;
-
-    // printf("iyr: %d, iday: %d\n",iyr, iday);
-    // printf("jd: %g\n",jd);
-    // printf("tmp_out is: %g, %g, %g\n",tmp_out[0], tmp_out[1], tmp_out[2]);
-    // printf("tmp_out_2 is: %g, %g, %g\n",tmp_out_2[0], tmp_out_2[1], tmp_out_2[2]);
-
-    // printf("returned lat: %g, lon: %g, rad: %g\n",lat_out, lon_out, rad_out);
-
-
-
-    // // Confirm we loaded everything
-    // for(map<int,rayF>::iterator iter = raylist.begin(); iter != raylist.end(); ++iter)
-    //     {
-    //         float key = iter->first;
-    //         rayF val = iter->second;
-    //         printf("Ray number %g: freq: %g nspec: %g\n",key, val.w, val.nspec);
-
-    //         // Print out all elements in a vector
-    //         vector<float> vec = val.time;
-    //         for (vector<float>::iterator it = vec.begin(); it != vec.end(); ++it)
-    //             printf("%g ",*it);
-    //         cout << "\n";
-
-    //     }
-
-
     return 0; // Return statement.
 } // Closing Main.
 

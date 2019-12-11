@@ -16,24 +16,6 @@ void psd_model::initialize(char* inp_filename) {
     this->filename = inp_filename;
     const mwSize *dims;
     
-    // mxArray *MLT;
-    // mxArray *J_perp;
-    // mxArray *L;
-    // mxArray *t_b;
-
-    // dp = opendir(inp_dir_name);
-    // int AE;
-    // int E;
-    // char *file;
-
-    // ostringstream ss;
-    
-    // // Clear any previous data
-    // MLT_v.clear();
-    // J_perp_v.clear();
-    // L_v.clear();
-    // t_b_v.clear();
-
         // Load CRRES data (cleaned up pls!)
         pmat = matOpen(inp_filename, "r");
         if (pmat == NULL) {
@@ -49,52 +31,6 @@ void psd_model::initialize(char* inp_filename) {
             // cout << "ndims: " << mxGetNumberOfFields(crres_data) << "\n";
             // cout << dims[0] << " " << dims[1] << "\n";
         }
-
-        // // Load all the CRRES files in the directory
-        // if (dp != NULL) {
-        //     while (ep = readdir (dp)) {
-        //         // cout << ep->d_name <<"\n";
-        //         if (sscanf(ep->d_name, "crres_e%d_ae%d.mat",&E, &AE)) {
-        //             // cout << meh << " " << AE << "\n";
-        //             // cout << ep->d_name << "\n";
-        //             ss.str("");
-        //             ss.clear();
-        //             ss << inp_dir_name << "/" << ep->d_name;
-        //             // cout << ss.str() << "\n";
-
-        //             pmat = matOpen(ss.str().c_str(), "r");
-        //             if (pmat == NULL) {
-        //                 printf("Error opening file %s\n", ep->d_name);
-        //             } else {
-        //                 // Load variables from this file:
-        //                 MLT    = matGetVariable(pmat, "MLT");
-        //                 J_perp = matGetVariable(pmat, "J_perp");
-        //                 L      = matGetVariable(pmat, "L");
-        //                 t_b    = matGetVariable(pmat, "t_b");
-
-        //                 replace_NaNs(MLT);
-        //                 replace_NaNs(J_perp);
-        //                 replace_NaNs(L);
-        //                 replace_NaNs(t_b);
-
-        //                 // WELL: Now we have the shit, what do we do with it
-        //                 MLT_v.push_back(MLT);
-        //                 J_perp_v.push_back(J_perp);
-        //                 L_v.push_back(L);
-        //                 t_b_v.push_back(t_b);
-
-        //                 // Energy and AE values from filename
-        //                 energy_v.push_back((E*1e-3));
-        //                 AE_v.push_back(AE);
-        //             }
-        //         } 
-        //     }
-
-        // dir_name = inp_dir_name;
-        
-        // } else {
-        //     cout << "failed to read directory\n";
-        // }
 }
 
 void psd_model::set_params(double L_sh_in, double L_pp_in, double MLT_in, double AE_level_in) {

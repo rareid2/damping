@@ -7,8 +7,6 @@
 using namespace std;
 using namespace Eigen;
 
-// extern "C" void sm_to_mag_d_(int* itime, double* x_in, double* x_out);
-// extern "C" void cart_to_pol_d_(double* x_in, double* lat, double* lon, double* radial);
 
 class psd_model; // Suprathermal electron distribution
 class integrand; // The function to be integrated
@@ -64,34 +62,16 @@ void damping_foust(rayF &ray, double Kp, double AE_level, int itime_in[2], bool 
     int m_low = -1;
     int m_hi  = 1;
 
-    // Change this to an input, you doof
-    // double AE_level = 3;
 
-    // itime_in[0] = 2012045;          // yyyyddd
-    // itime_in[1] = 1*(60*60*1000);   // time of day in msec     
-
-    // n_steps = 500.0;
-    // v_step = C/n_steps; //<- change back to this!
-
-    // // Get ray launch location in mag dipole coordinates:
+    // Get ray launch location in mag dipole coordinates:
     xin[0] = ray.pos[0][0];
     xin[1] = ray.pos[0][1];
     xin[2] = ray.pos[0][2];
     
-    // // Map to magnetic dipole coordinates
+    // Map to magnetic dipole coordinates
     sm_to_mag_d_(itime_in, xin, xout);
     cart_to_pol_d_(xout, &lat_init, &lon_init, &r_init);
-    // printf("pos size: %d\n",ray.pos[0].size());
     r_init/= R_E;
-
-    // printf("mag coords: %0.3f, %0.3f, %0.3f\n", R2D*lat_init, R2D*lon_init, r_init);
-
-
-    // I don't understand what this is yet.
-    // AN = AN_CM_DIST * pow( 10.0 , (12.0-(4.0*Q_DIST)) );
-
-    // Initialize ray power with zeros
-    // VectorXd ray_pwr = VectorXd::Zero(ray.time.size());
 
     // Initial power
     ray.damping = vector<double> (ray.time.size(), 0.0);
@@ -147,7 +127,6 @@ void damping_foust(rayF &ray, double Kp, double AE_level, int itime_in[2], bool 
         //          an externally-assigned time and longitude
         mlt = MLT(itime_in, lon);
         // cout << "MLT (mine): " << mlt << endl;
-        // / cout << endl;
 
         // Set the current location parameters for the density model:
         L_pp = bulge(Kp, mlt); // Get plasmapause at this MLT

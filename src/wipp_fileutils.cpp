@@ -161,7 +161,8 @@ map <int, rayF> read_rayfile(string fileName)
 
     } else {   // Couldn't open the file
 
-        cout << "Something's Fucky\n";
+        cout << "Failed to open " << fileName << " for reading\n";
+
     }
 
     // return 0; // Return statement.
@@ -224,7 +225,7 @@ void write_rayfile(string fileName, map <int, rayF> raylist) {
         } // raylist
 
     } else {   // Couldn't open the file
-        cout << "Something's Fucky\n";
+        cout << "Failed to open " << fileName << " for writing\n";
     }   
 }
 
@@ -253,6 +254,6 @@ void write_damping(string fileName, map<int, rayF> raylist) {
         } // raylist
 
     } else {   // Couldn't open the file
-        cout << "Something's Fucky\n";
+        cout << "Failed to open " << fileName << " for writing\n";
     }   
 }
