@@ -49,17 +49,20 @@ DUMP_OBJ = $(patsubst %,$(ODIR)/%,$(_DUMP_OBJ))
 # The Fortran coordinate transformation library
 XFORM = lib/xform_double
 
+# test -d $(ODIR) || mkdir $(ODIR)
+# test -d $(BDIR) || mkdir $(BDIR)
 # Rules for making individual objects
 $(ODIR)/%.o: $(SRC_DIR)/%.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS) -I$(EIGEN_DIR)
 
 # Rule to make all
-all: damping dump_psd_models
-
+all: $(ODIR) $(BDIR) damping dump_psd_models
 
 # Rule to link everything together + generate executable
 # (This is the main executable, "damping")
 damping: $(OBJ) libxformd.a $(ODIR)/gauss_legendre.o
+	test -d $(ODIR) || mkdir $(ODIR)
+	test -d $(BDIR) || mkdir $(BDIR)
 	$(CC) $(CFLAGS) $(OBJ) $(ODIR)/gauss_legendre.o -L $(LDIR) -L $(LGFORTRAN_PATH)\
 								 -lxformd -lgfortran $(MATLAB_FLAGS) -o $(BDIR)/$@
 	# Move the binaries up to the main directory
@@ -93,4 +96,10 @@ tidy:
 	rm -f $(ODIR)/*
 	rm -f $(BDIR)/*
 	# $(MAKE) -C $(XFORM) clean
+
+# Make the output directories, if they don't already exist
+$(ODIR):
+	test -d $(ODIR) || mkdir $(ODIR)
+$(BDIR):
+	test -d $(BDIR) || mkdir $(BDIR)
 
