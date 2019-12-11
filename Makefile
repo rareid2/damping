@@ -35,6 +35,9 @@ _OBJ = damping_main.o damping_ngo.o damping_foust.o math_utils.o \
 	   bulge.o coord_transforms.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
+# Objects to build for dump_psd_models: (both damping_main and dump_psd_models have 'main' functions)
+_DUMP_OBJ = dump_psd_models.o kp_to_pp.o polyfit.o psd_model.o
+DUMP_OBJ = $(patsubst %,$(ODIR)/%,$(_DUMP_OBJ))
 
 XFORM = lib/xform_double
 # Rules for making individual objects
@@ -42,19 +45,22 @@ $(ODIR)/%.o: $(SRC_DIR)/%.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS) -I$(EIGEN_DIR)
 
 # Rule to link everything together + generate executable
+# (This is the main executable, "damping")
 damping: $(OBJ) libxformd.a $(ODIR)/gauss_legendre.o
-	# $(MAKE) -C $(XFORM)
 	$(CC) $(CFLAGS) $(OBJ) $(ODIR)/gauss_legendre.o -L $(LDIR) -lxformd -lgfortran $(MATLAB_FLAGS) -o $(BDIR)/$@
 	# Move the binaries up to the main directory
 	cp bin/damping ../bin/damping
 	cp data/crres_clean.mat ../bin/crres_clean.mat
 
-dump: $(ODIR)/dump_psd_models.o $(ODIR)/kp_to_pp.o $(ODIR)/polyfit.o $(ODIR)/psd_model.o
-	$(CC) $(CFLAGS) $(ODIR)/dump_psd_models.o $(ODIR)/kp_to_pp.o $(ODIR)/polyfit.o $(ODIR)/psd_model.o $(ODIR)/gauss_legendre.o -L $(LDIR) -lxformd -lgfortran $(MATLAB_FLAGS) -o $(BDIR)/$@
+# Link and build "dump_psd_models" executable 
+dump_psd_models: $(DUMP_OBJ) libxformd.a
+	$(CC) $(CFLAGS) $(DUMP_OBJ) -L $(LDIR) -lxformd -lgfortran $(MATLAB_FLAGS) -o $(BDIR)/$@ 
 
+# Need a separate rule for gauss_legendre (I forget why)
 $(ODIR)/gauss_legendre.o: $(SRC_DIR)/gauss_legendre.c $(IDIR)/gauss_legendre.h
 	gcc -c -o $@ $< $(CFLAGS)
 
+# Make the coordinate transformation library
 libxformd.a:
 	$(MAKE) -C $(XFORM)
 
