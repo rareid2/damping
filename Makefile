@@ -81,6 +81,7 @@ $(ODIR)/gauss_legendre.o: $(SRC_DIR)/gauss_legendre.c $(IDIR)/gauss_legendre.h
 # Make the coordinate transformation library
 libxformd.a:
 	$(MAKE) -C $(XFORM)
+# 	cp $(XFORM)/libxformd.a $(LDIR)/libxformd.a
 
 # Safety rule for any file named "clean"
 .PHONY: clean
