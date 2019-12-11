@@ -1,0 +1,15 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module geo2sm ! in 
+    interface  ! in :geo2sm
+        subroutine geo_to_sm_d(itime,x_in,x_out) ! in :geo2sm:GEO_TO_SM.f95
+            integer*4 dimension(2) :: itime
+            real*8 dimension(3) :: x_in
+            real*8 dimension(3) :: x_out
+        end subroutine geo_to_sm_d
+    end interface 
+end python module geo2sm
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/

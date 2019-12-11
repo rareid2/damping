@@ -34,6 +34,7 @@ double dot_product(vector<double>u, vector<double> v) {
     for (int i =0; i < u.size(); i++) {
         out += u[i]*v[i];
     }
+    return out;
 }
 
 vector<double> add(vector<double>u, vector<double> v) {
@@ -42,5 +43,6 @@ vector<double> add(vector<double>u, vector<double> v) {
     for (int i =0; i < u.size(); i++) {
         out[i] = u[i] + v[i];
     }
+    return out;
 }
 
