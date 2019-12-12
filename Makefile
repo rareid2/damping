@@ -1,11 +1,11 @@
 IDIR =include
-EIGEN_DIR=lib/eigen-3.3.7/
+EIGEN_DIR=lib/eigen/
 
 # Point to your Matlab install -- (specific to your machine)
 MATLAB_DIR=/Applications/MATLAB_R2019a.app/extern/include
 MATLAB_BIN=/Applications/MATLAB_R2019a.app/bin/maci64
 
-# Path to your libgfortran library, wherever it may reside. /usr/lib? /usr/local/lib? 
+# Path to your libgfortran library, wherever it may reside. /usr/lib? /usr/local/lib?
 # (Mine is in Cellar since I installed it using Homebrew)
 LGFORTRAN_PATH=/usr/local/Cellar/gcc/8.3.0/lib/gcc/8
 
@@ -24,7 +24,7 @@ ODIR =build
 
 # Libraries
 LDIR =lib
-	
+
 # output binary directory
 BDIR =bin
 
@@ -70,9 +70,9 @@ damping: $(OBJ) libxformd.a $(ODIR)/gauss_legendre.o
 	cp bin/damping ../bin/damping
 	cp data/crres_clean.mat ../bin/crres_clean.mat
 
-# Link and build "dump_psd_models" executable 
+# Link and build "dump_psd_models" executable
 dump_psd_models: $(DUMP_OBJ) libxformd.a
-	$(CC) $(CFLAGS) $(DUMP_OBJ) -L $(LDIR) -L $(LGFORTRAN_PATH) -lxformd -lgfortran $(MATLAB_FLAGS) -o $(BDIR)/$@ 
+	$(CC) $(CFLAGS) $(DUMP_OBJ) -L $(LDIR) -L $(LGFORTRAN_PATH) -lxformd -lgfortran $(MATLAB_FLAGS) -o $(BDIR)/$@
 
 # Need a separate rule for gauss_legendre (I forget why)
 $(ODIR)/gauss_legendre.o: $(SRC_DIR)/gauss_legendre.c $(IDIR)/gauss_legendre.h
@@ -103,4 +103,3 @@ $(ODIR):
 	test -d $(ODIR) || mkdir $(ODIR)
 $(BDIR):
 	test -d $(BDIR) || mkdir $(BDIR)
-
