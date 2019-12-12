@@ -2,12 +2,15 @@ IDIR =include
 EIGEN_DIR=lib/eigen/
 
 # Point to your Matlab install -- (specific to your machine)
+# also needs to be changed for modularity
 MATLAB_DIR=/Applications/MATLAB_R2019a.app/extern/include
 MATLAB_BIN=/Applications/MATLAB_R2019a.app/bin/maci64
 
 # Path to your libgfortran library, wherever it may reside. /usr/lib? /usr/local/lib?
 # (Mine is in Cellar since I installed it using Homebrew)
-LGFORTRAN_PATH=/usr/local/Cellar/gcc/8.3.0/lib/gcc/8
+# This is a bit more modular now (if you have Homebrew-installed gcc), but you'll
+# need to change the version to 9
+LGFORTRAN_PATH := $(shell brew --prefix gcc)/lib/gcc/9
 
 # Which compiler to use -- c++, gcc, etc
 CC=c++
